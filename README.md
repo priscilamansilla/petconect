@@ -52,6 +52,8 @@ Ese selector es solo de la maqueta: se borra cuando esté hecho el login.
   (RN19 y RN20).
 - Las validaciones de los formularios (RN23).
 - Las rutas protegidas por rol (RN02 y RN03).
+- El guardado en el navegador: lo que se cambia sobrevive a recargar la
+  página. Ver "Cómo funciona el guardado" más abajo.
 
 ## Qué falta y de quién es
 
@@ -86,9 +88,36 @@ Archivos: `context/PetContext.jsx`, `context/ApplicationContext.jsx`,
    `src/utils/compatibility.js`, que son una propuesta y se pueden cambiar:
    especie 30, tamaño 25, edad 20, ubicación 15, sexo 10.
 
-2. **Nada se guarda al recargar la página.** Todo vive en los contextos, en
-   memoria. Si queremos que las solicitudes y el historial sobrevivan a un
-   F5, hay que guardarlos en `localStorage`.
+2. ~~Nada se guarda al recargar la página.~~ **Resuelto**: ver abajo.
+
+## Cómo funciona el guardado (localStorage)
+
+Esto ya está hecho y lo usan los cuatro contextos, así que **no hace falta
+que lo programe nadie en su bloque**. Cuando escribas tu función, cambiá el
+estado como siempre y el guardado sale solo.
+
+El hook está en `src/hooks/useEstadoGuardado.js` y se usa igual que
+`useState`:
+
+```js
+const [mascotas, setMascotas] = useEstadoGuardado('mascotas', mascotasIniciales);
+```
+
+La primera vez que se abre la app no hay nada guardado, así que arranca con
+los datos de `src/data/`. De ahí en adelante, cada cambio queda en el
+navegador y sobrevive a recargar la página.
+
+**La trampa a tener en cuenta:** si cambiás algo en `src/data/` (agregás una
+mascota, renombrás un campo), tu navegador va a seguir mostrando lo que
+tenía guardado de antes y vas a pensar que tu cambio no funcionó. Hay dos
+formas de salir de eso:
+
+- **Restablecer datos de ejemplo**, en el menú `demo` de arriba a la
+  derecha. Es lo más rápido mientras programás.
+- **Subir `VERSION_DATOS`** en `src/hooks/useEstadoGuardado.js`. Eso descarta
+  lo guardado en el navegador de todas, no solo en el tuyo. Usalo cuando el
+  cambio en `src/data/` sea definitivo y quieras que a las demás también se
+  les actualice.
 
 ## Para no pisarnos
 

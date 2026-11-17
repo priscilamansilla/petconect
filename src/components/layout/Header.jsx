@@ -1,6 +1,7 @@
 import { Badge, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { restablecerDatos } from '../../hooks/useEstadoGuardado';
 
 export default function Header() {
   const {
@@ -126,6 +127,12 @@ export default function Header() {
               </NavDropdown.Item>
               <NavDropdown.Item as={Link} to="/ingresar">
                 Ir a la pantalla de login
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              {/* Borra lo guardado en el navegador y vuelve a los datos de
+                  ejemplo. Sirve para probar desde cero. */}
+              <NavDropdown.Item onClick={restablecerDatos}>
+                Restablecer datos de ejemplo
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>

@@ -1,11 +1,15 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { favoritos as favoritosIniciales } from '../data/applications';
 import { useAuth } from './AuthContext';
+import { useEstadoGuardado } from '../hooks/useEstadoGuardado';
 
 const FavoritesContext = createContext(null);
 
 export function FavoritesProvider({ children }) {
-  const [favoritos, setFavoritos] = useState(favoritosIniciales);
+  const [favoritos, setFavoritos] = useEstadoGuardado(
+    'favoritos',
+    favoritosIniciales,
+  );
   const { usuarioActual } = useAuth();
 
   function esFavorito(mascotaId) {

@@ -1,12 +1,16 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { mascotas as mascotasIniciales } from '../data/pets';
 import { refugios } from '../data/shelters';
 import { ESTADOS_MASCOTA, RANGOS_EDAD } from '../data/options';
+import { useEstadoGuardado } from '../hooks/useEstadoGuardado';
 
 const PetContext = createContext(null);
 
 export function PetProvider({ children }) {
-  const [mascotas, setMascotas] = useState(mascotasIniciales);
+  const [mascotas, setMascotas] = useEstadoGuardado(
+    'mascotas',
+    mascotasIniciales,
+  );
 
   function obtenerMascota(id) {
     return mascotas.find((m) => m.id === Number(id)) ?? null;

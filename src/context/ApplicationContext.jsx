@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { solicitudes as solicitudesIniciales } from '../data/applications';
 import { ESTADOS_SOLICITUD } from '../data/options';
+import { useEstadoGuardado } from '../hooks/useEstadoGuardado';
 
 const ApplicationContext = createContext(null);
 
@@ -10,7 +11,10 @@ const ESTADOS_ACTIVOS = [
 ];
 
 export function ApplicationProvider({ children }) {
-  const [solicitudes, setSolicitudes] = useState(solicitudesIniciales);
+  const [solicitudes, setSolicitudes] = useEstadoGuardado(
+    'solicitudes',
+    solicitudesIniciales,
+  );
 
   function solicitudesDeAdoptante(adoptanteId) {
     return solicitudes.filter((s) => s.adoptanteId === Number(adoptanteId));
