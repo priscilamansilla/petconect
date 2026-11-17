@@ -1,0 +1,237 @@
+/* Estilos propios de PETCONECT.
+   Lo que se puede resolver con clases de Bootstrap se resuelve con Bootstrap;
+   acá va solo lo que hace falta agregar. */
+
+:root {
+  --pc-verde: #0f766e;
+  --pc-verde-oscuro: #115e59;
+  --pc-naranja: #f97316;
+  --pc-crema: #fdf8f3;
+  --pc-texto: #1f2937;
+
+  /* Variables de Bootstrap que pisamos para que el color de marca valga
+     para todos los botones, enlaces y barras de la aplicación. */
+  --bs-primary: var(--pc-verde);
+  --bs-primary-rgb: 15, 118, 110;
+  --bs-link-color: var(--pc-verde-oscuro);
+  --bs-link-hover-color: var(--pc-verde);
+  --bs-body-color: var(--pc-texto);
+}
+
+body {
+  background-color: #ffffff;
+}
+
+/* --- Botones y barras con el color de marca ---------------------------- */
+
+.btn-primary {
+  --bs-btn-bg: var(--pc-verde);
+  --bs-btn-border-color: var(--pc-verde);
+  --bs-btn-hover-bg: var(--pc-verde-oscuro);
+  --bs-btn-hover-border-color: var(--pc-verde-oscuro);
+  --bs-btn-active-bg: var(--pc-verde-oscuro);
+  --bs-btn-active-border-color: var(--pc-verde-oscuro);
+  --bs-btn-disabled-bg: var(--pc-verde);
+  --bs-btn-disabled-border-color: var(--pc-verde);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--pc-verde);
+  --bs-btn-border-color: var(--pc-verde);
+  --bs-btn-hover-bg: var(--pc-verde);
+  --bs-btn-hover-border-color: var(--pc-verde);
+  --bs-btn-active-bg: var(--pc-verde);
+  --bs-btn-active-border-color: var(--pc-verde);
+  --bs-btn-disabled-color: var(--pc-verde);
+  --bs-btn-disabled-border-color: var(--pc-verde);
+}
+
+.progress-bar.bg-primary,
+.bg-primary {
+  background-color: var(--pc-verde) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--pc-verde);
+  box-shadow: 0 0 0 0.2rem rgba(15, 118, 110, 0.18);
+}
+
+/* --- Barra de navegación ----------------------------------------------- */
+
+.pc-navbar {
+  background-color: var(--pc-verde);
+}
+
+.pc-navbar .navbar-brand,
+.pc-navbar .nav-link,
+.pc-navbar .dropdown-toggle {
+  color: #ffffff;
+}
+
+.pc-navbar .nav-link:hover,
+.pc-navbar .nav-link.active {
+  color: #ffffff;
+  text-decoration: underline;
+  text-underline-offset: 0.35rem;
+}
+
+.pc-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.pc-navbar .navbar-toggler-icon {
+  filter: invert(1) grayscale(1) brightness(2);
+}
+
+.pc-brand-accent {
+  color: #fdba74;
+}
+
+/* --- Portada ------------------------------------------------------------ */
+
+.pc-hero {
+  background: linear-gradient(135deg, var(--pc-verde) 0%, #0b5f58 100%);
+  color: #ffffff;
+  padding: 4rem 0;
+}
+
+.pc-hero .btn-outline-light:hover {
+  color: var(--pc-verde);
+}
+
+.pc-hero-circulo {
+  width: 18rem;
+  height: 18rem;
+  margin-inline: auto;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8rem;
+}
+
+.pc-seccion-clara {
+  background-color: var(--pc-crema);
+}
+
+/* --- Tarjetas de mascota ------------------------------------------------ */
+
+.pc-card {
+  border: 1px solid #e5e7eb;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.75rem 1.5rem rgba(15, 23, 42, 0.12);
+}
+
+.pc-card-foto {
+  position: relative;
+}
+
+.pc-card-foto img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.pc-card-estado {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+}
+
+.pc-boton-favorito {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  line-height: 1;
+  box-shadow: 0 0.25rem 0.5rem rgba(15, 23, 42, 0.18);
+}
+
+.pc-card-enlace {
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.pc-card-enlace:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.1);
+}
+
+.pc-barra-compat {
+  height: 0.5rem;
+}
+
+/* --- Tablas y listados -------------------------------------------------- */
+
+.pc-miniatura {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pc-miniatura-chica {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+.pc-filtros {
+  background-color: var(--pc-crema);
+  border: 1px solid #eee3d8;
+}
+
+/* --- Historial de una solicitud ----------------------------------------- */
+
+.pc-historial-item {
+  border-left: 2px solid #e5e7eb;
+  padding: 0 0 1rem 1rem;
+  margin-left: 0.35rem;
+  position: relative;
+}
+
+.pc-historial-item:last-child {
+  padding-bottom: 0;
+}
+
+.pc-historial-item::before {
+  content: '';
+  position: absolute;
+  left: -0.3rem;
+  top: 0.4rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background-color: var(--pc-verde);
+}
+
+/* --- Pie de página ------------------------------------------------------ */
+
+.pc-footer {
+  background-color: var(--pc-crema);
+  border-top: 1px solid #eee3d8;
+}
+
+.pc-footer a {
+  color: var(--pc-verde-oscuro);
+  text-decoration: none;
+}
+
+.pc-footer a:hover {
+  text-decoration: underline;
+}
