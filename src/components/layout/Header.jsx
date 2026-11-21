@@ -1,5 +1,5 @@
-import { Badge, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
-import { Link, NavLink } from 'react-router-dom';
+import { Badge, Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { restablecerDatos } from '../../hooks/useEstadoGuardado';
 
@@ -7,14 +7,26 @@ export default function Header() {
   const {
     usuarios,
     usuarioActual,
+    cerrarSesion,
     cambiarUsuarioDemo,
     esAdoptante,
     esRefugio,
     esAdmin,
   } = useAuth();
+  const navegar = useNavigate();
+
+  function salir() {
+    cerrarSesion();
+    navegar('/');
+  }
 
   return (
-    <Navbar expand="lg" className="pc-navbar shadow-sm" sticky="top" variant="dark">
+    <Navbar
+      expand="lg"
+      className="pc-navbar shadow-sm"
+      sticky="top"
+      variant="dark"
+    >
       <Container>
         <Navbar.Brand as={Link} to="/" className="fw-bold">
           <span aria-hidden="true">🐾</span> PET
@@ -46,9 +58,6 @@ export default function Header() {
                 </Nav.Link>
                 <Nav.Link as={NavLink} to="/mis-solicitudes">
                   Mis solicitudes
-                </Nav.Link>
-                <Nav.Link as={NavLink} to="/mi-cuenta">
-                  Mi cuenta
                 </Nav.Link>
               </>
             )}
@@ -91,22 +100,51 @@ export default function Header() {
               </NavDropdown>
             )}
 
-            {/* Selector que existe solo mientras esto es una maqueta: deja
-                recorrer la aplicación con cada rol sin pasar por el login.
-                Se borra cuando la autenticación esté hecha. */}
+            {usuarioActual ? (
+              <NavDropdown
+                align="end"
+                id="menu-cuenta"
+                title={`Hola, ${usuarioActual.nombre}`}
+              >
+                {esAdoptante && (
+                  <>
+                    <NavDropdown.Item as={Link} to="/mi-cuenta">
+                      Mi cuenta
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={Link} to="/perfil">
+                      Mi perfil
+                    </NavDropdown.Item>
+                    <NavDropdown.Divider />
+                  </>
+                )}
+                <NavDropdown.Item onClick={salir}>
+                  Cerrar sesión
+                </NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <div className="d-flex gap-2 my-2 my-lg-0 ms-lg-2">
+                <Button as={Link} to="/ingresar" variant="outline-light" size="sm">
+                  Ingresar
+                </Button>
+                <Button as={Link} to="/registrarme" variant="light" size="sm">
+                  Crear cuenta
+                </Button>
+              </div>
+            )}
+
+            {/* Atajo que existe solo mientras desarrollamos: deja entrar como
+                cualquier usuario sin escribir la contraseña, y restablecer
+                los datos. Hay que borrarlo antes de entregar. */}
             <NavDropdown
               align="end"
-              id="selector-usuario-demo"
+              id="menu-demo"
               title={
-                <span>
-                  <Badge bg="warning" text="dark" className="me-2">
-                    demo
-                  </Badge>
-                  {usuarioActual ? usuarioActual.nombre : 'Sin sesión'}
-                </span>
+                <Badge bg="warning" text="dark">
+                  demo
+                </Badge>
               }
             >
-              <NavDropdown.Header>Ver la app como...</NavDropdown.Header>
+              <NavDropdown.Header>Entrar como...</NavDropdown.Header>
               {usuarios.map((usuario) => (
                 <NavDropdown.Item
                   key={usuario.id}
@@ -122,15 +160,6 @@ export default function Header() {
                 </NavDropdown.Item>
               ))}
               <NavDropdown.Divider />
-              <NavDropdown.Item onClick={() => cambiarUsuarioDemo(null)}>
-                Cerrar sesión
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/ingresar">
-                Ir a la pantalla de login
-              </NavDropdown.Item>
-              <NavDropdown.Divider />
-              {/* Borra lo guardado en el navegador y vuelve a los datos de
-                  ejemplo. Sirve para probar desde cero. */}
               <NavDropdown.Item onClick={restablecerDatos}>
                 Restablecer datos de ejemplo
               </NavDropdown.Item>

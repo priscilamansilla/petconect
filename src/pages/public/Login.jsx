@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { inicioSegunRol, useAuth } from '../../context/AuthContext';
 import {
   email as validarEmail,
   requerido,
@@ -8,22 +9,42 @@ import {
 } from '../../utils/validators';
 
 export default function Login() {
+  const { iniciarSesion } = useAuth();
+  const navegar = useNavigate();
+  const ubicacion = useLocation();
+
   const [datos, setDatos] = useState({ email: '', password: '' });
   const [errores, setErrores] = useState({});
-  const [intento, setIntento] = useState(false);
+  const [errorGeneral, setErrorGeneral] = useState('');
 
   function cambiar(campo, valor) {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
+    setErrorGeneral('');
   }
 
   function enviar(evento) {
     evento.preventDefault();
+
+    // Primero el formato (RN23), después las credenciales.
     const encontrados = validarFormulario({
       email: [() => validarEmail(datos.email)],
       password: [() => requerido(datos.password, 'La contraseña')],
     });
     setErrores(encontrados);
-    if (Object.keys(encontrados).length === 0) setIntento(true);
+    if (Object.keys(encontrados).length > 0) return;
+
+    const resultado = iniciarSesion(datos.email, datos.password);
+
+    if (!resultado.ok) {
+      setErrorGeneral(resultado.error);
+      return;
+    }
+
+    // Si llegó acá desde una pantalla protegida, vuelve a esa; si no, al
+    // inicio que le corresponde según su rol.
+    const destino =
+      ubicacion.state?.desde ?? inicioSegunRol(resultado.usuario.rol);
+    navegar(destino, { replace: true });
   }
 
   return (
@@ -37,10 +58,13 @@ export default function Login() {
                 Entrá para guardar favoritos y seguir tus solicitudes.
               </p>
 
-              {intento && (
-                <Alert variant="info">
-                  Los datos son válidos. La autenticación todavía no está
-                  implementada: corresponde al bloque de login y roles.
+              {errorGeneral && (
+                <Alert
+                  variant="danger"
+                  onClose={() => setErrorGeneral('')}
+                  dismissible
+                >
+                  {errorGeneral}
                 </Alert>
               )}
 
@@ -49,6 +73,7 @@ export default function Login() {
                   <Form.Label>Correo electrónico</Form.Label>
                   <Form.Control
                     type="email"
+                    autoComplete="email"
                     value={datos.email}
                     onChange={(e) => cambiar('email', e.target.value)}
                     isInvalid={Boolean(errores.email)}
@@ -62,6 +87,7 @@ export default function Login() {
                   <Form.Label>Contraseña</Form.Label>
                   <Form.Control
                     type="password"
+                    autoComplete="current-password"
                     value={datos.password}
                     onChange={(e) => cambiar('password', e.target.value)}
                     isInvalid={Boolean(errores.password)}
@@ -85,11 +111,15 @@ export default function Login() {
 
           <Card className="mt-3 border-0 pc-seccion-clara">
             <Card.Body className="small">
-              <p className="fw-semibold mb-1">Usuarios de prueba</p>
-              <p className="mb-0 text-body-secondary">
-                sofia.ramirez@gmail.com (adoptante) ·
-                contacto@patitasdeloeste.org (refugio) · admin@petconect.com
-                (administradora). La contraseña de todos es 1234.
+              <p className="fw-semibold mb-1">Cuentas de prueba</p>
+              <ul className="mb-0 ps-3 text-body-secondary">
+                <li>sofia.ramirez@gmail.com — adoptante</li>
+                <li>contacto@patitasdeloeste.org — refugio</li>
+                <li>admin@petconect.com — administradora</li>
+                <li>rodrigo.peralta@gmail.com — cuenta desactivada</li>
+              </ul>
+              <p className="mb-0 mt-2 text-body-secondary">
+                La contraseña de todas es <strong>1234</strong>.
               </p>
             </Card.Body>
           </Card>

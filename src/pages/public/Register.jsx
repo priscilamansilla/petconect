@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Alert, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { CIUDADES } from '../../data/options';
-import { usuarios } from '../../data/users';
 import {
   email as validarEmail,
   longitudMinima,
@@ -19,12 +19,16 @@ const VACIO = {
 };
 
 export default function Register() {
+  const { registrar, buscarPorEmail } = useAuth();
+  const navegar = useNavigate();
+
   const [datos, setDatos] = useState(VACIO);
   const [errores, setErrores] = useState({});
-  const [listo, setListo] = useState(false);
+  const [errorGeneral, setErrorGeneral] = useState('');
 
   function cambiar(campo, valor) {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
+    setErrorGeneral('');
   }
 
   function enviar(evento) {
@@ -37,9 +41,7 @@ export default function Register() {
         () => validarEmail(datos.email),
         // RN01: el correo electrónico tiene que ser único.
         () =>
-          usuarios.some(
-            (u) => u.email.toLowerCase() === datos.email.trim().toLowerCase(),
-          )
+          buscarPorEmail(datos.email)
             ? 'Ya existe una cuenta con ese correo.'
             : null,
       ],
@@ -51,7 +53,18 @@ export default function Register() {
     });
 
     setErrores(encontrados);
-    if (Object.keys(encontrados).length === 0) setListo(true);
+    if (Object.keys(encontrados).length > 0) return;
+
+    const resultado = registrar(datos);
+
+    if (!resultado.ok) {
+      setErrorGeneral(resultado.error);
+      return;
+    }
+
+    // Queda logueada directamente y la mandamos a cargar sus preferencias,
+    // que son las que alimentan el puntaje de compatibilidad.
+    navegar('/perfil', { replace: true });
   }
 
   return (
@@ -65,10 +78,13 @@ export default function Register() {
                 Todos los campos son obligatorios.
               </p>
 
-              {listo && (
-                <Alert variant="info">
-                  Los datos son válidos. El alta todavía no está implementada:
-                  corresponde al bloque de login y roles.
+              {errorGeneral && (
+                <Alert
+                  variant="danger"
+                  onClose={() => setErrorGeneral('')}
+                  dismissible
+                >
+                  {errorGeneral}
                 </Alert>
               )}
 
@@ -107,6 +123,7 @@ export default function Register() {
                       <Form.Label>Correo electrónico</Form.Label>
                       <Form.Control
                         type="email"
+                        autoComplete="email"
                         value={datos.email}
                         onChange={(e) => cambiar('email', e.target.value)}
                         isInvalid={Boolean(errores.email)}
@@ -143,6 +160,7 @@ export default function Register() {
                       <Form.Label>Contraseña</Form.Label>
                       <Form.Control
                         type="password"
+                        autoComplete="new-password"
                         value={datos.password}
                         onChange={(e) => cambiar('password', e.target.value)}
                         isInvalid={Boolean(errores.password)}

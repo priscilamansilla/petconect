@@ -1,12 +1,11 @@
 import { Alert, Button, Container } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 // Deja pasar solo a los roles indicados (RN02 y RN03).
-// Más adelante, cuando esté hecho el login, conviene reemplazar el aviso por
-// un <Navigate to="/ingresar" /> cuando no hay sesión iniciada.
 export default function RutaProtegida({ roles, children }) {
   const { usuarioActual } = useAuth();
+  const ubicacion = useLocation();
 
   if (!usuarioActual) {
     return (
@@ -16,7 +15,14 @@ export default function RutaProtegida({ roles, children }) {
           <p className="text-body-secondary">
             Esta sección es solo para usuarios registrados.
           </p>
-          <Button as={Link} to="/ingresar" variant="primary">
+          <Button
+            as={Link}
+            to="/ingresar"
+            // Guardamos a dónde quería entrar, para devolverla ahí después
+            // de que inicie sesión.
+            state={{ desde: ubicacion.pathname }}
+            variant="primary"
+          >
             Ir a iniciar sesión
           </Button>
         </Alert>
