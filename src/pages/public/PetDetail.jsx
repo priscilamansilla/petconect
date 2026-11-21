@@ -26,10 +26,12 @@ export default function PetDetail() {
   const { id } = useParams();
   const { obtenerMascota, obtenerRefugio } = usePets();
   const { usuarioActual, esAdoptante } = useAuth();
-  const { tieneSolicitudActiva } = useApplications();
+  const { tieneSolicitudActiva, crearSolicitud } = useApplications();
   const { esFavorito, alternarFavorito } = useFavorites();
   const [mostrarModal, setMostrarModal] = useState(false);
   const [enviada, setEnviada] = useState(false);
+  const [mensaje, setMensaje] = useState('');
+  const [errorSolicitud, setErrorSolicitud] = useState('');
 
   const mascota = obtenerMascota(id);
 
@@ -67,6 +69,28 @@ export default function PetDetail() {
     ['Apto para chicos', mascota.aptoNinos],
     ['Apto departamento', mascota.aptoDepartamento],
   ];
+
+  function cerrarModal() {
+    setMostrarModal(false);
+    setErrorSolicitud('');
+  }
+
+  // RN07, RN10 y RN11 se controlan dentro de crearSolicitud(): si algo falla,
+  // el mensaje se muestra en el modal.
+  function enviarSolicitud() {
+    const resultado = crearSolicitud({
+      mascotaId: mascota.id,
+      adoptanteId: usuarioActual.id,
+      mensaje,
+    });
+    if (!resultado.ok) {
+      setErrorSolicitud(resultado.error);
+      return;
+    }
+    setMensaje('');
+    cerrarModal();
+    setEnviada(true);
+  }
 
   return (
     <Container className="py-5">
@@ -186,7 +210,11 @@ export default function PetDetail() {
           {enviada && (
             <Alert variant="success">
               Solicitud enviada. El refugio la va a revisar y te va a
-              contactar. (En la maqueta todavía no se guarda.)
+              contactar. Podés seguirla desde{' '}
+              <Alert.Link as={Link} to="/mis-solicitudes">
+                Mis solicitudes
+              </Alert.Link>
+              .
             </Alert>
           )}
 
@@ -229,7 +257,7 @@ export default function PetDetail() {
         </Col>
       </Row>
 
-      <Modal show={mostrarModal} onHide={() => setMostrarModal(false)} centered>
+      <Modal show={mostrarModal} onHide={cerrarModal} centered>
         <Modal.Header closeButton>
           <Modal.Title className="h5">
             Solicitar la adopción de {mascota.nombre}
@@ -240,23 +268,26 @@ export default function PetDetail() {
             <Form.Label>
               Contale al refugio por qué querés adoptarlo y cómo es tu casa
             </Form.Label>
-            <Form.Control as="textarea" rows={5} />
+            <Form.Control
+              as="textarea"
+              rows={5}
+              value={mensaje}
+              onChange={(e) => setMensaje(e.target.value)}
+              isInvalid={Boolean(errorSolicitud)}
+            />
+            <Form.Control.Feedback type="invalid">
+              {errorSolicitud}
+            </Form.Control.Feedback>
             <Form.Text>
               El refugio usa esta información para evaluar la solicitud.
             </Form.Text>
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="outline-secondary" onClick={() => setMostrarModal(false)}>
+          <Button variant="outline-secondary" onClick={cerrarModal}>
             Cancelar
           </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              setMostrarModal(false);
-              setEnviada(true);
-            }}
-          >
+          <Button variant="primary" onClick={enviarSolicitud}>
             Enviar solicitud
           </Button>
         </Modal.Footer>

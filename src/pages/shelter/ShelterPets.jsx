@@ -1,22 +1,72 @@
 import { useState } from 'react';
-import { Button, Card, Container, Modal, Table } from 'react-bootstrap';
+import { Alert, Button, Card, Container, Modal, Table } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { EstadoMascota } from '../../components/common/EstadoBadge';
 import PetForm from '../../components/pets/PetForm';
 import { edadEnTexto } from '../../utils/format';
+import { ESTADOS_MASCOTA } from '../../data/options';
+import { transicionValidaMascota } from '../../utils/reglas';
 import { useApplications } from '../../context/ApplicationContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePets } from '../../context/PetContext';
 
 export default function ShelterPets() {
   const { usuarioActual } = useAuth();
-  const { mascotasDeRefugio } = usePets();
+  const { mascotasDeRefugio, publicarMascota, editarMascota, eliminarMascota } =
+    usePets();
   const { solicitudesDeMascota } = useApplications();
   const [editando, setEditando] = useState(null);
   const [creando, setCreando] = useState(false);
+  const [aviso, setAviso] = useState(null);
 
   // RN06: el refugio solo administra las mascotas que publicó.
   const mias = mascotasDeRefugio(usuarioActual.refugioId);
+
+  function cerrarFormulario() {
+    setCreando(false);
+    setEditando(null);
+  }
+
+  // RN05 y RN06: el formulario ya validó los campos; acá se guarda y, si salió
+  // bien, se cierra. Si salió mal, el resultado vuelve al formulario para que
+  // muestre el error.
+  function guardar(datos) {
+    const resultado = editando
+      ? editarMascota(editando.id, datos)
+      : publicarMascota(datos);
+
+    if (resultado.ok) {
+      setAviso({
+        variant: 'success',
+        texto: editando
+          ? `Guardaste los cambios de ${datos.nombre}.`
+          : `${datos.nombre} ya está publicada.`,
+      });
+      cerrarFormulario();
+    }
+    return resultado;
+  }
+
+  // RN09: con solicitudes la publicación se desactiva; sin solicitudes se
+  // elimina de verdad.
+  function quitar(mascota, tieneSolicitudes) {
+    const pregunta = tieneSolicitudes
+      ? `¿Desactivar la publicación de ${mascota.nombre}? Ya no va a recibir solicitudes.`
+      : `¿Eliminar la publicación de ${mascota.nombre}? Esta acción no se puede deshacer.`;
+    if (!window.confirm(pregunta)) return;
+
+    const resultado = eliminarMascota(mascota.id, tieneSolicitudes);
+    if (resultado.ok) {
+      setAviso({
+        variant: 'success',
+        texto: resultado.desactivada
+          ? `${mascota.nombre} quedó inactiva.`
+          : `Se eliminó la publicación de ${mascota.nombre}.`,
+      });
+    } else {
+      setAviso({ variant: 'danger', texto: resultado.error });
+    }
+  }
 
   return (
     <Container className="py-5">
@@ -31,6 +81,12 @@ export default function ShelterPets() {
           Publicar una mascota
         </Button>
       </div>
+
+      {aviso && (
+        <Alert variant={aviso.variant} onClose={() => setAviso(null)} dismissible>
+          {aviso.texto}
+        </Alert>
+      )}
 
       <Card>
         <Table responsive hover className="mb-0 align-middle">
@@ -50,6 +106,14 @@ export default function ShelterPets() {
           <tbody>
             {mias.map((mascota) => {
               const solicitudes = solicitudesDeMascota(mascota.id);
+              const tieneSolicitudes = solicitudes.length > 0;
+              // Con solicitudes solo se puede desactivar, y eso solo si el
+              // estado actual lo permite (una mascota adoptada o ya inactiva
+              // no tiene nada más para hacer).
+              const sePuedeQuitar =
+                !tieneSolicitudes ||
+                transicionValidaMascota(mascota.estado, ESTADOS_MASCOTA.INACTIVA);
+
               return (
                 <tr key={mascota.id}>
                   <td>
@@ -78,14 +142,15 @@ export default function ShelterPets() {
                     <Button
                       size="sm"
                       variant="outline-danger"
-                      disabled={solicitudes.length > 0}
+                      disabled={!sePuedeQuitar}
                       title={
-                        solicitudes.length > 0
+                        tieneSolicitudes
                           ? 'Tiene solicitudes: solo se puede desactivar la publicación'
                           : undefined
                       }
+                      onClick={() => quitar(mascota, tieneSolicitudes)}
                     >
-                      Eliminar
+                      {tieneSolicitudes ? 'Desactivar' : 'Eliminar'}
                     </Button>
                   </td>
                 </tr>
@@ -97,10 +162,7 @@ export default function ShelterPets() {
 
       <Modal
         show={creando || Boolean(editando)}
-        onHide={() => {
-          setCreando(false);
-          setEditando(null);
-        }}
+        onHide={cerrarFormulario}
         size="lg"
         scrollable
       >
@@ -112,10 +174,8 @@ export default function ShelterPets() {
         <Modal.Body>
           <PetForm
             mascota={editando}
-            onCancelar={() => {
-              setCreando(false);
-              setEditando(null);
-            }}
+            onGuardar={guardar}
+            onCancelar={cerrarFormulario}
           />
         </Modal.Body>
       </Modal>

@@ -1,15 +1,19 @@
-import { usuarios } from '../../data/users';
+import { useAuth } from '../../context/AuthContext';
 import { EstadoSolicitud } from './EstadoBadge';
 import { fechaEnTexto } from '../../utils/format';
-
-function nombreDe(usuarioId) {
-  const usuario = usuarios.find((u) => u.id === usuarioId);
-  return usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Sistema';
-}
 
 // Historial de cambios de una solicitud (RN22): estado, fecha, usuario
 // responsable y motivo.
 export default function HistorialSolicitud({ historial }) {
+  // Los usuarios se leen del contexto (no de data/users) para que aparezcan
+  // también las personas que se registraron después.
+  const { usuarios } = useAuth();
+
+  function nombreDe(usuarioId) {
+    const usuario = usuarios.find((u) => u.id === usuarioId);
+    return usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Sistema';
+  }
+
   return (
     <ol className="pc-historial list-unstyled mb-0">
       {historial.map((paso, indice) => (

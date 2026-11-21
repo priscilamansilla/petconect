@@ -7,11 +7,7 @@ import {
   SEXOS,
   TAMANOS,
 } from '../../data/options';
-import {
-  requerido,
-  numeroEntre,
-  validarFormulario,
-} from '../../utils/validators';
+import { TRANSICIONES_MASCOTA, validarMascota } from '../../utils/reglas';
 
 const VACIO = {
   nombre: '',
@@ -30,10 +26,20 @@ const VACIO = {
 
 // Alta y edición de una publicación (RN05). Los campos marcados con asterisco
 // son obligatorios y se validan antes de guardar (RN23).
+//
+// onGuardar(datos) tiene que devolver { ok, error }: si ok es false, el error
+// se muestra arriba del formulario y la pantalla que lo usa decide cuándo
+// cerrarlo.
 export default function PetForm({ mascota, onGuardar, onCancelar }) {
   const [datos, setDatos] = useState(mascota ? { ...mascota } : VACIO);
   const [errores, setErrores] = useState({});
-  const [aviso, setAviso] = useState(false);
+  const [errorGeneral, setErrorGeneral] = useState('');
+
+  // RN08: al editar solo se ofrecen el estado actual y los que se pueden
+  // alcanzar desde él. Una publicación nueva siempre arranca como Disponible.
+  const estadosPermitidos = mascota
+    ? [mascota.estado, ...(TRANSICIONES_MASCOTA[mascota.estado] ?? [])]
+    : [ESTADOS_MASCOTA.DISPONIBLE];
 
   function cambiar(campo, valor) {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
@@ -41,32 +47,24 @@ export default function PetForm({ mascota, onGuardar, onCancelar }) {
 
   function enviar(evento) {
     evento.preventDefault();
-    const encontrados = validarFormulario({
-      nombre: [() => requerido(datos.nombre, 'El nombre')],
-      especie: [() => requerido(datos.especie, 'La especie')],
-      edad: [
-        () => requerido(datos.edad, 'La edad'),
-        () => numeroEntre(datos.edad, 0, 30, 'La edad'),
-      ],
-      sexo: [() => requerido(datos.sexo, 'El sexo')],
-      tamano: [() => requerido(datos.tamano, 'El tamaño')],
-      descripcion: [() => requerido(datos.descripcion, 'La descripción')],
-      ciudad: [() => requerido(datos.ciudad, 'La ubicación')],
-    });
+    const encontrados = validarMascota(datos);
 
     setErrores(encontrados);
+    setErrorGeneral('');
     if (Object.keys(encontrados).length > 0) return;
 
-    setAviso(true);
-    onGuardar?.(datos);
+    const resultado = onGuardar?.(datos);
+    if (resultado && !resultado.ok) {
+      setErrorGeneral(resultado.error);
+      if (resultado.errores) setErrores(resultado.errores);
+    }
   }
 
   return (
     <Form noValidate onSubmit={enviar}>
-      {aviso && (
-        <Alert variant="info" onClose={() => setAviso(false)} dismissible>
-          Los datos son válidos. El guardado todavía no está implementado:
-          corresponde al bloque de refugio y solicitudes.
+      {errorGeneral && (
+        <Alert variant="danger" onClose={() => setErrorGeneral('')} dismissible>
+          {errorGeneral}
         </Alert>
       )}
 
@@ -209,14 +207,18 @@ export default function PetForm({ mascota, onGuardar, onCancelar }) {
             <Form.Select
               value={datos.estado}
               onChange={(e) => cambiar('estado', e.target.value)}
+              disabled={!mascota}
             >
-              {Object.values(ESTADOS_MASCOTA).map((e) => (
+              {estadosPermitidos.map((e) => (
                 <option key={e} value={e}>
                   {e}
                 </option>
               ))}
             </Form.Select>
             <Form.Text>
+              {mascota
+                ? 'Solo se muestran los estados a los que puede pasar (RN08). '
+                : 'Toda publicación nueva empieza como Disponible. '}
               Solo las mascotas disponibles reciben solicitudes nuevas (RN07).
             </Form.Text>
           </Form.Group>

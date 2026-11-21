@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Accordion, Alert, Badge, Button, Card, Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { EstadoSolicitud } from '../../components/common/EstadoBadge';
@@ -10,10 +11,28 @@ import { fechaEnTexto } from '../../utils/format';
 
 export default function MyApplications() {
   const { usuarioActual } = useAuth();
-  const { solicitudesDeAdoptante } = useApplications();
+  const { solicitudesDeAdoptante, cambiarEstadoSolicitud } = useApplications();
   const { obtenerMascota, obtenerRefugio } = usePets();
+  const [aviso, setAviso] = useState(null);
 
   const mias = solicitudesDeAdoptante(usuarioActual.id);
+
+  // RN13: una solicitud activa se puede cancelar. Queda en el historial.
+  function cancelar(solicitud, nombreMascota) {
+    if (!window.confirm(`¿Cancelar tu solicitud por ${nombreMascota}?`)) return;
+
+    const resultado = cambiarEstadoSolicitud(
+      solicitud.id,
+      ESTADOS_SOLICITUD.CANCELADA,
+      usuarioActual.id,
+      'La solicitud fue cancelada por quien la envió.',
+    );
+    setAviso(
+      resultado.ok
+        ? { variant: 'success', texto: 'Cancelaste la solicitud.' }
+        : { variant: 'danger', texto: resultado.error },
+    );
+  }
 
   const activas = mias.filter((s) =>
     [ESTADOS_SOLICITUD.PENDIENTE, ESTADOS_SOLICITUD.EN_EVALUACION].includes(
@@ -28,6 +47,12 @@ export default function MyApplications() {
         Tenés {mias.length} {mias.length === 1 ? 'solicitud' : 'solicitudes'} en
         total, {activas.length} en curso.
       </p>
+
+      {aviso && (
+        <Alert variant={aviso.variant} onClose={() => setAviso(null)} dismissible>
+          {aviso.texto}
+        </Alert>
+      )}
 
       {mias.length === 0 && (
         <Alert variant="light" className="border">
@@ -97,7 +122,11 @@ export default function MyApplications() {
                     ESTADOS_SOLICITUD.PENDIENTE,
                     ESTADOS_SOLICITUD.EN_EVALUACION,
                   ].includes(solicitud.estado) && (
-                    <Button size="sm" variant="outline-secondary" disabled>
+                    <Button
+                      size="sm"
+                      variant="outline-secondary"
+                      onClick={() => cancelar(solicitud, mascota?.nombre)}
+                    >
                       Cancelar solicitud
                     </Button>
                   )}
