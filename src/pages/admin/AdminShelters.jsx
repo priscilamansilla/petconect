@@ -33,6 +33,7 @@ const FORMULARIO_INICIAL = {
   descripcion: "",
 };
 
+// RN21 y RN23: supervisión y gestión administrativa de refugios con validación de sus datos.
 export default function AdminShelters() {
   const {
     refugios,
@@ -105,6 +106,7 @@ export default function AdminShelters() {
     setErrores((actuales) => ({ ...actuales, [name]: "" }));
   }
 
+  // RN21 y RN23: valida campos, correo, ubicación y duplicados antes de guardar un refugio.
   function validar() {
     const nuevos = {};
     [
@@ -139,6 +141,7 @@ export default function AdminShelters() {
     return Object.keys(nuevos).length === 0;
   }
 
+  // RN21 y RN23: registra o actualiza refugios usando la persistencia local compartida.
   function guardar(evento) {
     evento.preventDefault();
     if (!validar()) return;
@@ -158,6 +161,7 @@ export default function AdminShelters() {
     });
   }
 
+  // RN21 y RN24: conserva mascotas e historiales y bloquea la baja si quedan registros activos.
   function cambiarEstado(refugio) {
     const activar = !refugio.activo;
     if (!activar) {

@@ -52,6 +52,7 @@ function normalizar(datos) {
   };
 }
 
+// RN05, RN08 y RN23: valida campos, valores permitidos y estado de la mascota para el alta y edición administrativa.
 function validarDatosAdminMascota(datos) {
   const errores = validarMascota(datos);
   if (!ESPECIES.includes(datos.especie)) errores.especie = 'Seleccioná una especie válida.';
@@ -64,6 +65,7 @@ function validarDatosAdminMascota(datos) {
   return errores;
 }
 
+// RN21 y RN23: valida los datos obligatorios y el formato de correo del refugio.
 function validarDatosRefugio(datos) {
   const nombre = String(datos.nombre ?? '').trim();
   const responsable = String(datos.responsable ?? '').trim();
@@ -146,6 +148,7 @@ export function PetProvider({ children }) {
     );
   }
 
+  // RN02, RN03 y RN21: limita la gestión administrativa de mascotas y refugios al rol administrador.
   function puedeAdministrarCatalogos() {
     return usuarioActual?.rol === ROLES.ADMIN;
   }
@@ -180,6 +183,7 @@ export function PetProvider({ children }) {
     return { ok: true, mascota: nueva };
   }
 
+  // RN05, RN06, RN21 y RN23: registra la mascota con datos válidos y un refugio existente.
   function publicarMascotaAdmin(datos) {
     if (!puedeAdministrarCatalogos()) {
       return { ok: false, error: 'Solo la administración puede registrar mascotas desde este panel.' };
@@ -207,6 +211,7 @@ export function PetProvider({ children }) {
     return { ok: true, mascota: nueva };
   }
 
+  // RN06, RN08, RN21, RN23 y RN24: actualiza la publicación sin romper su refugio ni sus transiciones de estado.
   function editarMascotaAdmin(id, datos) {
     if (!puedeAdministrarCatalogos()) {
       return { ok: false, error: 'Solo la administración puede editar mascotas desde este panel.' };
@@ -249,6 +254,7 @@ export function PetProvider({ children }) {
     return { ok: true };
   }
 
+  // RN21 y RN23: crea refugios con correo único y datos validados.
   function crearRefugioAdmin(datos) {
     if (!puedeAdministrarCatalogos()) {
       return { ok: false, error: 'Solo la administración puede gestionar refugios.' };
@@ -267,6 +273,7 @@ export function PetProvider({ children }) {
     return { ok: true, refugio: nuevo };
   }
 
+  // RN21 y RN23: modifica la información conservando el estado actual y evitando correos duplicados.
   function actualizarRefugioAdmin(id, datos) {
     if (!puedeAdministrarCatalogos()) {
       return { ok: false, error: 'Solo la administración puede gestionar refugios.' };
@@ -289,6 +296,7 @@ export function PetProvider({ children }) {
     return { ok: true, refugio: actualizado };
   }
 
+  // RN21 y RN24: actualiza el estado administrativo del refugio conservando sus registros asociados.
   function cambiarEstadoRefugioAdmin(id, activo) {
     if (!puedeAdministrarCatalogos()) {
       return { ok: false, error: 'Solo la administración puede gestionar refugios.' };

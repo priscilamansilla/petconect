@@ -43,6 +43,7 @@ const FORMULARIO_INICIAL = {
   aptoDepartamento: false,
 };
 
+// RN05, RN06, RN08, RN09, RN17, RN21, RN23 y RN24: administración de mascotas, respetando asociaciones, validaciones e historiales.
 export default function AdminPets() {
   const {
     mascotas,
@@ -106,6 +107,8 @@ export default function AdminPets() {
     setErrores((actuales) => ({ ...actuales, [name]: "" }));
   }
 
+  // RN05 y RN23: valida los datos obligatorios y los valores permitidos antes de guardar.
+  // RN06, RN08 y RN24: evita asociaciones inexistentes y estados incompatibles con solicitudes activas.
   function validar() {
     const nuevos = {};
     [
@@ -176,6 +179,7 @@ export default function AdminPets() {
     return Object.keys(nuevos).length === 0;
   }
 
+  // RN05, RN06, RN08, RN21 y RN23: crea o actualiza la publicación mediante el estado compartido del proyecto.
   function guardar(evento) {
     evento.preventDefault();
     if (!validar()) return;
@@ -201,6 +205,7 @@ export default function AdminPets() {
     });
   }
 
+  // RN09 y RN24: conserva el historial de solicitudes y confirma antes de borrar o desactivar una publicación.
   function confirmarEliminacion(mascota) {
     const tieneSolicitudes = solicitudesDeMascota(mascota.id).length > 0;
     const texto = tieneSolicitudes

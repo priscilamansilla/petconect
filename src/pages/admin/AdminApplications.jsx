@@ -29,6 +29,7 @@ const FILTROS_INICIALES = {
   tipo: "",
 };
 
+// RN12, RN13, RN14, RN21, RN22, RN23 y RN24: supervisión de solicitudes de adopción con transiciones e historial.
 export default function AdminApplications() {
   const { solicitudes, cambiarEstadoSolicitud, aprobarSolicitud } =
     useApplications();
@@ -82,6 +83,7 @@ export default function AdminApplications() {
     setFiltros(FILTROS_INICIALES);
   }
 
+  // RN12, RN13, RN14, RN22 y RN24: aplica solo transiciones autorizadas y confirma acciones importantes.
   function ejecutarTransicion(estado, motivo = "") {
     if (!detalle || !usuarioActual) return;
     const confirmar =
@@ -108,6 +110,7 @@ export default function AdminApplications() {
     setErrorRechazo("");
   }
 
+  // RN13 y RN23: exige un motivo antes de solicitar el rechazo.
   function rechazarSolicitud() {
     if (!motivoRechazo.trim()) {
       setErrorRechazo("Escribí el motivo del rechazo.");

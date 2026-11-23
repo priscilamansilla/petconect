@@ -1,20 +1,6 @@
 import { useEffect, useState } from 'react';
 
-// Guarda el estado en el navegador (localStorage) para que lo que hace el
-// usuario sobreviva a recargar la página.
-//
-// Se usa igual que useState:
-//   const [mascotas, setMascotas] = useEstadoGuardado('mascotas', mascotasIniciales);
-//
-// La primera vez que se abre la app no hay nada guardado, así que arranca
-// con los datos de ejemplo de src/data/. A partir de ahí, cada cambio se
-// guarda solo.
-
-// OJO, LEER ESTO:
-// Si cambiás algo en src/data/ (agregás una mascota, renombrás un campo),
-// subí este número. Eso descarta lo que haya guardado en el navegador y
-// vuelve a cargar los datos nuevos. Si no lo subís, vos vas a ver los datos
-// viejos y vas a pensar que tu cambio no funcionó.
+// Incrementar al cambiar el esquema o los datos iniciales: se descarta el estado persistido de versiones anteriores
 export const VERSION_DATOS = 1;
 
 const PREFIJO = 'petconect';
@@ -23,7 +9,7 @@ function clave(nombre) {
   return `${PREFIJO}:v${VERSION_DATOS}:${nombre}`;
 }
 
-// Borra lo guardado por versiones anteriores, para no dejar basura.
+// Elimina claves de versiones anteriores para evitar cargar datos incompatibles.
 function limpiarVersionesViejas() {
   try {
     const actual = `${PREFIJO}:v${VERSION_DATOS}:`;
@@ -31,7 +17,7 @@ function limpiarVersionesViejas() {
       .filter((k) => k.startsWith(`${PREFIJO}:`) && !k.startsWith(actual))
       .forEach((k) => window.localStorage.removeItem(k));
   } catch {
-    // Si el navegador no deja usar localStorage, no pasa nada.
+    // localStorage puede estar deshabilitado por el navegador.
   }
 }
 
@@ -42,11 +28,12 @@ function leer(nombre, valorInicial) {
     const guardado = window.localStorage.getItem(clave(nombre));
     return guardado === null ? valorInicial : JSON.parse(guardado);
   } catch {
-    // Puede fallar en modo incógnito o si el JSON quedó corrupto.
+    // Si no se puede leer o parsear el valor, se usan los datos iniciales.
     return valorInicial;
   }
 }
 
+// Persiste en localStorage el valor actual y lo inicializa desde allí cuando existe.
 export function useEstadoGuardado(nombre, valorInicial) {
   const [valor, setValor] = useState(() => leer(nombre, valorInicial));
 
@@ -54,23 +41,21 @@ export function useEstadoGuardado(nombre, valorInicial) {
     try {
       window.localStorage.setItem(clave(nombre), JSON.stringify(valor));
     } catch {
-      // Si no se puede guardar, la app sigue funcionando igual: lo que pasa
-      // es que al recargar se pierde lo que hizo el usuario.
+      // La aplicación continúa en memoria si localStorage no está disponible.
     }
   }, [nombre, valor]);
 
   return [valor, setValor];
 }
 
-// Borra todo lo que guardó la aplicación y recarga la página, para volver a
-// los datos de ejemplo. Lo usa el botón "Restablecer datos" del menú demo.
+// Borra el estado persistido y recarga la aplicación con sus datos iniciales.
 export function restablecerDatos() {
   try {
     Object.keys(window.localStorage)
       .filter((k) => k.startsWith(`${PREFIJO}:`))
       .forEach((k) => window.localStorage.removeItem(k));
   } catch {
-    // Si no se pudo borrar, al menos recargamos.
+    // Se intenta recargar aunque localStorage no permita borrar.
   }
   window.location.href = '/';
 }
