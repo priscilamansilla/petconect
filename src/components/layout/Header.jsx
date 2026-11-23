@@ -1,18 +1,10 @@
-import { Badge, Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Button, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { restablecerDatos } from '../../hooks/useEstadoGuardado';
 
 export default function Header() {
-  const {
-    usuarios,
-    usuarioActual,
-    cerrarSesion,
-    cambiarUsuarioDemo,
-    esAdoptante,
-    esRefugio,
-    esAdmin,
-  } = useAuth();
+  const { usuarioActual, cerrarSesion, esAdoptante, esRefugio, esAdmin } =
+    useAuth();
   const navegar = useNavigate();
 
   function salir() {
@@ -132,38 +124,6 @@ export default function Header() {
               </div>
             )}
 
-            {/* Atajo que existe solo mientras desarrollamos: deja entrar como
-                cualquier usuario sin escribir la contraseña, y restablecer
-                los datos. Hay que borrarlo antes de entregar. */}
-            <NavDropdown
-              align="end"
-              id="menu-demo"
-              title={
-                <Badge bg="warning" text="dark">
-                  demo
-                </Badge>
-              }
-            >
-              <NavDropdown.Header>Entrar como...</NavDropdown.Header>
-              {usuarios.map((usuario) => (
-                <NavDropdown.Item
-                  key={usuario.id}
-                  active={usuario.id === usuarioActual?.id}
-                  onClick={() => cambiarUsuarioDemo(usuario.id)}
-                >
-                  {usuario.nombre} {usuario.apellido}
-                  <span className="text-body-secondary small">
-                    {' — '}
-                    {usuario.rol}
-                    {!usuario.activo && ' (inactivo)'}
-                  </span>
-                </NavDropdown.Item>
-              ))}
-              <NavDropdown.Divider />
-              <NavDropdown.Item onClick={restablecerDatos}>
-                Restablecer datos de ejemplo
-              </NavDropdown.Item>
-            </NavDropdown>
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -1,5 +1,6 @@
 import { Col, Container, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { restablecerDatos } from '../../hooks/useEstadoGuardado';
 
 export default function Footer() {
   return (
@@ -31,11 +32,20 @@ export default function Footer() {
           </Col>
           <Col md={4}>
             <p className="fw-semibold mb-2">Trabajo práctico</p>
-            <p className="small text-body-secondary mb-0">
+            <p className="small text-body-secondary mb-1">
               Plataformas de Desarrollo — Escuela Da Vinci.
               <br />
-              Maqueta navegable con datos de ejemplo.
+              Los datos son de ejemplo y se guardan en este navegador.
             </p>
+            {/* Por si al probar la aplicación se desordenan los datos: vuelve
+                todo al estado inicial. */}
+            <button
+              type="button"
+              className="btn btn-link btn-sm p-0 small"
+              onClick={restablecerDatos}
+            >
+              Restablecer datos de ejemplo
+            </button>
           </Col>
         </Row>
       </Container>
