@@ -1,6 +1,6 @@
 # PetConnect
 
-**Plataforma de adopción responsable de mascotas**
+**Plataforma web para la adopción responsable de mascotas**
 
 Trabajo práctico de Plataformas de Desarrollo — Escuela Da Vinci
 
@@ -8,112 +8,81 @@ Trabajo práctico de Plataformas de Desarrollo — Escuela Da Vinci
 
 - Juana Romero
 - Priscilla Mansilla
-- 
+- Antonella Capello
 
 ## Sobre el proyecto
 
-PetConnect es una aplicación web ficticia que conecta personas interesadas en adoptar con refugios de animales. Busca organizar el catálogo de mascotas y acompañar el proceso de adopción mediante perfiles, solicitudes y herramientas de gestión.
-
-La información de ejemplo está definida en JavaScript dentro de src/data. La aplicación no consume APIs ni utiliza un backend o una base de datos externa. Para conservar los cambios entre recargas, utiliza localStorage en el navegador; por eso, esos cambios quedan guardados localmente en cada navegador.
+PetConect+ es una plataforma web para la gestión y adopción responsable de mascotas. La plataforma busca conectar a adoptantes con refugios y ofrece un sistema de compatibilidad orientativo entre el perfil del adoptante y las características de cada animal(esta compatibilidad no es determinativa a la hora de procesar una solicitud)
 
 ## Roles
 
-- **Adoptante:** explora mascotas, guarda favoritas, gestiona su perfil y consulta sus solicitudes.
-- **Refugio:** administra sus publicaciones y revisa solicitudes de adopción.
-- **Administrador:** gestiona usuarios, refugios y mascotas, y supervisa solicitudes de adopción.
+- Adoptante: explora el catálogo, guarda mascotas favoritas, gestiona su perfil y consulta sus solicitudes.
+- Refugio: administra sus publicaciones y revisa solicitudes de adopción relacionadas con sus mascotas.
+- Administrador: gestiona usuarios, mascotas y refugios, y supervisa las solicitudes.
 
-## Funcionalidades
+Las pantallas y acciones disponibles dependen del rol con el que se ingresa a la aplicación.
 
-- Catálogo de mascotas con búsqueda y filtros.
-- Detalle de cada mascota y cálculo orientativo de compatibilidad con las preferencias del adoptante.
-- Registro, inicio y cierre de sesión para la demostración.
-- Solicitudes de adopción con estados e historial de cambios.
-- Paneles separados según el rol.
-- Gestión administrativa de usuarios, refugios y mascotas.
-- Datos de ejemplo y almacenamiento local en el navegador.
-- Componentes visuales reutilizables y diseño adaptable con React Bootstrap.
+## Funcionalidades principales
 
-Las solicitudes implementadas son postulaciones para adoptar mascotas. No se administran solicitudes de voluntariado.
+- Catálogo de mascotas con búsqueda, filtros y vista de detalle.
+- Compatibilidad orientativa según el perfil del adoptante y las características de la mascota.
+- Registro e inicio y cierre de sesión para la demostración.
+- Favoritos y seguimiento de solicitudes de adopción.
+- Solicitudes con estados e historial de cambios.
+- Paneles para adoptantes, refugios y administración.
+- Gestión administrativa de usuarios, mascotas y refugios.
+- Componentes visuales reutilizables y diseño adaptable.
 
-## Tecnologías
+## Tecnologías y datos
 
-- React y JavaScript
-- HTML y CSS
-- Vite
-- React Bootstrap y Bootstrap
-- React Router
-- localStorage para persistencia local
+El proyecto utiliza React, JavaScript, HTML y CSS. La interfaz se construye con React Bootstrap y Bootstrap, y la navegación con React Router. Vite se utiliza para ejecutar el entorno de desarrollo y generar la compilación.
 
-## Cómo ejecutar el proyecto
+Los datos iniciales están definidos en JavaScript dentro de `src/data`. La aplicación no consume APIs ni utiliza un backend o una base de datos externa. Los cambios de la demostración se guardan en `localStorage` del navegador; por ese motivo, cada navegador conserva sus propios datos.
 
-Se requiere Node.js y npm.
+## Ejecutar el proyecto
 
-~~~bash
+Se requiere Node.js y npm. Desde la carpeta del proyecto, instalá las dependencias y ejecutá el servidor de desarrollo:
+
+```bash
 npm install
 npm run dev
-~~~
+```
 
 Vite mostrará en la terminal la dirección local para abrir la aplicación.
 
 Para generar la versión compilada:
 
-~~~bash
+```bash
 npm run build
-~~~
+```
 
-Para previsualizar la compilación:
+Para verla localmente:
 
-~~~bash
+```bash
 npm run preview
-~~~
+```
 
 ## Cuentas de demostración
 
-Las cuentas de ejemplo se encuentran en src/data/users.js. Todas usan la contraseña 1234.
+Las cuentas de ejemplo están definidas en `src/data/users.js`. Para la demostración, todas utilizan la contraseña `1234`.
 
 | Rol | Correo |
 |---|---|
-| Administradora | admin@petconect.com |
-| Refugio | contacto@patitasdeloeste.org |
-| Adoptante | sofia.ramirez@gmail.com |
-| Adoptante desactivado | rodrigo.peralta@gmail.com |
+| Administradora | `admin@petconect.com` |
+| Refugio | `contacto@patitasdeloeste.org` |
+| Adoptante | `sofia.ramirez@gmail.com` |
+| Adoptante desactivado | `rodrigo.peralta@gmail.com` |
 
-La aplicación incluye un selector “demo” para cambiar entre usuarios de ejemplo. Es una ayuda de demostración del prototipo; las credenciales también permiten probar el formulario de inicio de sesión. Las cuentas y contraseñas son datos ficticios de prueba, no deben usarse como autenticación segura en un servicio real.
+El selector “demo” permite cambiar entre usuarios de ejemplo. Estas cuentas y contraseñas son ficticias y sirven únicamente para probar el prototipo; no representan un sistema de autenticación seguro para producción.
 
-## Datos de ejemplo
+## Organización del código
 
-Los datos iniciales están organizados en:
-
-- src/data/users.js: usuarios y roles.
-- src/data/shelters.js: refugios.
-- src/data/pets.js: mascotas.
-- src/data/applications.js: solicitudes de adopción e historial.
-- src/data/options.js: roles y estados permitidos.
-
-El menú “demo” incluye una opción para restablecer los datos de ejemplo. Como la persistencia usa localStorage, abrir la aplicación en otro navegador o dispositivo muestra su propio almacenamiento local.
-
-## Estructura principal
-
-~~~text
+```text
 src/
   components/   Componentes visuales reutilizables
   context/      Estado compartido de usuarios, mascotas y solicitudes
-  data/         Datos iniciales hardcodeados
-  hooks/        Hooks reutilizables, incluido el guardado local
-  pages/        Vistas públicas, de adoptantes, refugios y administración
-  utils/        Validaciones, reglas de negocio y formato
-~~~
-
-## Publicación
-
-La configuración de Firebase está destinada al hosting estático de la carpeta dist. Para compilar:
-
-~~~bash
-npm run build
-~~~
-
-Si el entorno de entrega tiene Firebase CLI configurado, se puede publicar con:
-
-~~~bash
-firebase deploy --only hosting
-~~~
+  data/         Datos iniciales y opciones de la aplicación
+  hooks/        Hooks reutilizables y persistencia local
+  pages/        Vistas públicas y paneles según el rol
+  utils/        Validaciones, reglas de negocio y funciones auxiliares
+```
