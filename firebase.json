@@ -7,6 +7,18 @@
         "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "headers": [
+      {
+        "comment": "Todo el proyecto vive dentro del index.html, así que no conviene que quede cacheado: si no, después de publicar un cambio se sigue viendo la versión vieja hasta una hora.",
+        "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
     ]
   }
 }
