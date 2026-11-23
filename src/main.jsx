@@ -1,6 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+// HashRouter y no BrowserRouter: las direcciones llevan un # (por ejemplo
+// index.html#/mascotas). Eso es lo que permite que la carpeta dist funcione
+// abriendola con doble clic, sin tener que levantar un servidor.
+import { HashRouter } from 'react-router-dom';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './index.css';
@@ -13,7 +16,7 @@ import { FavoritesProvider } from './context/FavoritesContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <PetProvider>
           <ApplicationProvider>
@@ -23,6 +26,6 @@ createRoot(document.getElementById('root')).render(
           </ApplicationProvider>
         </PetProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>,
 );

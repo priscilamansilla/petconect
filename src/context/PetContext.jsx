@@ -23,9 +23,9 @@ const PetContext = createContext(null);
 // Las mascotas nuevas todavía no tienen foto propia, así que se les pone una
 // ilustración según la especie.
 const FOTO_POR_ESPECIE = {
-  Perro: '/pets/max.svg',
-  Gato: '/pets/nala.svg',
-  Conejo: '/pets/pelusa.svg',
+  Perro: 'pets/max.svg',
+  Gato: 'pets/nala.svg',
+  Conejo: 'pets/pelusa.svg',
 };
 
 const ESTADOS_MASCOTA_VALIDOS = Object.values(ESTADOS_MASCOTA);
@@ -175,7 +175,7 @@ export function PetProvider({ children }) {
       ...normalizar(datos),
       estado: ESTADOS_MASCOTA.DISPONIBLE,
       refugioId: usuarioActual.refugioId,
-      foto: FOTO_POR_ESPECIE[datos.especie] ?? '/favicon.svg',
+      foto: FOTO_POR_ESPECIE[datos.especie] ?? 'favicon.svg',
       fechaPublicacion: hoy(),
     };
 
@@ -204,7 +204,7 @@ export function PetProvider({ children }) {
       edad: Number(datos.edad),
       estado: datos.estado,
       refugioId,
-      foto: FOTO_POR_ESPECIE[datos.especie] ?? '/favicon.svg',
+      foto: FOTO_POR_ESPECIE[datos.especie] ?? 'favicon.svg',
       fechaPublicacion: hoy(),
     };
     setMascotas((actuales) => [...actuales, nueva]);

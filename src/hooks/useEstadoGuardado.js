@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 
 // Incrementar al cambiar el esquema o los datos iniciales: se descarta el estado persistido de versiones anteriores
-export const VERSION_DATOS = 1;
+// v2: las fotos de las mascotas pasaron a rutas relativas ('pets/x.svg'),
+// para que la carpeta dist funcione abierta desde la computadora.
+export const VERSION_DATOS = 2;
 
 const PREFIJO = 'petconect';
 

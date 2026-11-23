@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node herramientas/html-unico.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
