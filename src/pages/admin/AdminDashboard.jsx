@@ -1,34 +1,34 @@
-import { Card, Col, Container, Row } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { useApplications } from '../../context/ApplicationContext';
-import { useAuth } from '../../context/AuthContext';
-import { usePets } from '../../context/PetContext';
-import { ESTADOS_MASCOTA, ESTADOS_SOLICITUD } from '../../data/options';
+import { Card, Col, Container, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import { useApplications } from "../../context/ApplicationContext";
+import { useAuth } from "../../context/AuthContext";
+import { usePets } from "../../context/PetContext";
+import { ESTADOS_MASCOTA, ESTADOS_SOLICITUD } from "../../data/options";
 
 const SECCIONES = [
   {
-    titulo: 'Usuarios',
-    texto: 'Alta, baja y cambio de rol de las cuentas.',
-    ruta: '/admin/usuarios',
-    icono: '👥',
+    titulo: "Usuarios",
+    texto: "Alta, baja y cambio de rol de las cuentas.",
+    ruta: "/admin/usuarios",
+    icono: "👥",
   },
   {
-    titulo: 'Refugios',
-    texto: 'Refugios asociados y sus publicaciones.',
-    ruta: '/admin/refugios',
-    icono: '🏠',
+    titulo: "Refugios",
+    texto: "Refugios asociados y sus publicaciones.",
+    ruta: "/admin/refugios",
+    icono: "🏠",
   },
   {
-    titulo: 'Mascotas',
-    texto: 'Todas las publicaciones de la plataforma.',
-    ruta: '/admin/mascotas',
-    icono: '🐾',
+    titulo: "Mascotas",
+    texto: "Todas las publicaciones de la plataforma.",
+    ruta: "/admin/mascotas",
+    icono: "🐾",
   },
   {
-    titulo: 'Solicitudes',
-    texto: 'Supervisión de las solicitudes de adopción.',
-    ruta: '/admin/solicitudes',
-    icono: '📋',
+    titulo: "Solicitudes",
+    texto: "Supervisión de las solicitudes de adopción.",
+    ruta: "/admin/solicitudes",
+    icono: "📋",
   },
 ];
 
@@ -38,20 +38,20 @@ export default function AdminDashboard() {
   const { solicitudes } = useApplications();
 
   const numeros = [
-    { etiqueta: 'Usuarios', valor: usuarios.length },
-    { etiqueta: 'Refugios', valor: refugios.length },
+    { etiqueta: "Usuarios", valor: usuarios.length },
+    { etiqueta: "Refugios", valor: refugios.length },
     {
-      etiqueta: 'Disponibles',
+      etiqueta: "Disponibles",
       valor: mascotas.filter((m) => m.estado === ESTADOS_MASCOTA.DISPONIBLE)
         .length,
     },
     {
-      etiqueta: 'Adoptadas',
+      etiqueta: "Adoptadas",
       valor: mascotas.filter((m) => m.estado === ESTADOS_MASCOTA.ADOPTADA)
         .length,
     },
     {
-      etiqueta: 'Solicitudes activas',
+      etiqueta: "Solicitudes activas",
       valor: solicitudes.filter((s) =>
         [ESTADOS_SOLICITUD.PENDIENTE, ESTADOS_SOLICITUD.EN_EVALUACION].includes(
           s.estado,

@@ -18,12 +18,23 @@ const ESTADOS_ACTIVOS = [
   ESTADOS_SOLICITUD.EN_EVALUACION,
 ];
 
-// Motivo que queda en el historial cuando quien hace el cambio no escribe uno.
-// El rechazo es la excepción: ahí el motivo es obligatorio.
-const MOTIVO_POR_DEFECTO = {
-  [ESTADOS_SOLICITUD.EN_EVALUACION]: 'El refugio tomó la solicitud para evaluarla.',
-  [ESTADOS_SOLICITUD.CANCELADA]: 'La solicitud fue cancelada.',
-};
+// Motivo por defecto del historial. La administración y el refugio pueden
+// iniciar una evaluación; la cancelación también puede venir del adoptante.
+function motivoPorDefecto(estado, usuario) {
+  if (estado === ESTADOS_SOLICITUD.EN_EVALUACION) {
+    return usuario.rol === ROLES.ADMIN
+      ? 'La administración pasó la solicitud a evaluación.'
+      : 'El refugio tomó la solicitud para evaluarla.';
+  }
+  if (estado === ESTADOS_SOLICITUD.CANCELADA) {
+    return usuario.rol === ROLES.ADMIN
+      ? 'La administración canceló la solicitud.'
+      : usuario.rol === ROLES.ADOPTANTE
+        ? 'El adoptante canceló la solicitud.'
+        : 'El refugio canceló la solicitud.';
+  }
+  return 'Se actualizó el estado de la solicitud.';
+}
 
 // RN22: cada paso del historial guarda estado, fecha, usuario y motivo.
 function paso(estado, usuarioId, motivo) {
@@ -147,7 +158,7 @@ export function ApplicationProvider({ children }) {
     }
 
     if (nuevoEstado === ESTADOS_SOLICITUD.APROBADA) {
-      return aprobarSolicitud(id, usuarioId);
+      return aprobarSolicitud(id, usuarioId, motivo);
     }
 
     const mascota = obtenerMascota(solicitud.mascotaId);
@@ -176,6 +187,7 @@ export function ApplicationProvider({ children }) {
     if (nuevoEstado === ESTADOS_SOLICITUD.RECHAZADA && !razon) {
       return { ok: false, error: 'Escribí el motivo del rechazo.' };
     }
+    const motivoFinal = razon || motivoPorDefecto(nuevoEstado, usuario);
 
     setSolicitudes((actuales) =>
       actuales.map((s) =>
@@ -188,7 +200,7 @@ export function ApplicationProvider({ children }) {
                 paso(
                   nuevoEstado,
                   usuario.id,
-                  razon || MOTIVO_POR_DEFECTO[nuevoEstado],
+                  motivoFinal,
                 ),
               ],
             }
@@ -236,7 +248,7 @@ export function ApplicationProvider({ children }) {
   // RN14, RN15 y RN16: solo se aprueba desde "En evaluación". Al aprobar, la
   // mascota pasa a "Adoptada" y las demás solicitudes activas de esa mascota
   // quedan canceladas, cada una con su paso en el historial.
-  function aprobarSolicitud(id, usuarioId) {
+  function aprobarSolicitud(id, usuarioId, motivo = '') {
     const solicitud = solicitudes.find((s) => s.id === Number(id));
     if (!solicitud) return { ok: false, error: 'No encontramos esa solicitud.' };
 
@@ -262,6 +274,12 @@ export function ApplicationProvider({ children }) {
       };
     }
 
+    const motivoAprobacion =
+      String(motivo ?? '').trim() ||
+      (usuario.rol === ROLES.ADMIN
+        ? 'La administración aprobó la solicitud. La adopción se confirmó.'
+        : 'El refugio aprobó la solicitud. La adopción se confirmó.');
+
     // Se controla antes de tocar nada, para no dejar la solicitud aprobada con
     // una mascota que no puede pasar a "Adoptada".
     if (!transicionValidaMascota(mascota.estado, ESTADOS_MASCOTA.ADOPTADA)) {
@@ -282,7 +300,7 @@ export function ApplicationProvider({ children }) {
               paso(
                 ESTADOS_SOLICITUD.APROBADA,
                 usuario.id,
-                'El refugio aprobó la solicitud. La adopción se confirmó.',
+                motivoAprobacion,
               ),
             ],
           };

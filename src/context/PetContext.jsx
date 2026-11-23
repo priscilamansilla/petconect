@@ -1,7 +1,15 @@
 import { createContext, useContext } from 'react';
 import { mascotas as mascotasIniciales } from '../data/pets';
-import { refugios } from '../data/shelters';
-import { ESTADOS_MASCOTA, RANGOS_EDAD, ROLES } from '../data/options';
+import { refugios as refugiosIniciales } from '../data/shelters';
+import {
+  CIUDADES,
+  ESPECIES,
+  ESTADOS_MASCOTA,
+  RANGOS_EDAD,
+  ROLES,
+  SEXOS,
+  TAMANOS,
+} from '../data/options';
 import { useEstadoGuardado } from '../hooks/useEstadoGuardado';
 import {
   hoy,
@@ -20,6 +28,8 @@ const FOTO_POR_ESPECIE = {
   Conejo: '/pets/pelusa.svg',
 };
 
+const ESTADOS_MASCOTA_VALIDOS = Object.values(ESTADOS_MASCOTA);
+
 const ERROR_RN06 =
   'Solo el refugio responsable puede modificar esta publicación.';
 
@@ -28,6 +38,7 @@ const ERROR_RN06 =
 function normalizar(datos) {
   return {
     nombre: datos.nombre.trim(),
+    ...(datos.raza !== undefined ? { raza: String(datos.raza).trim() } : {}),
     especie: datos.especie,
     edad: Number(datos.edad),
     sexo: datos.sexo,
@@ -41,11 +52,47 @@ function normalizar(datos) {
   };
 }
 
+function validarDatosAdminMascota(datos) {
+  const errores = validarMascota(datos);
+  if (!ESPECIES.includes(datos.especie)) errores.especie = 'Seleccioná una especie válida.';
+  if (!SEXOS.includes(datos.sexo)) errores.sexo = 'Seleccioná un sexo válido.';
+  if (!TAMANOS.includes(datos.tamano)) errores.tamano = 'Seleccioná un tamaño válido.';
+  if (!CIUDADES.includes(datos.ciudad)) errores.ciudad = 'Seleccioná una ubicación válida.';
+  if (!String(datos.raza ?? '').trim()) errores.raza = 'La raza es obligatoria.';
+  if (!Number.isInteger(Number(datos.edad))) errores.edad = 'La edad debe ser un número entero.';
+  if (!ESTADOS_MASCOTA_VALIDOS.includes(datos.estado)) errores.estado = 'Seleccioná un estado válido.';
+  return errores;
+}
+
+function validarDatosRefugio(datos) {
+  const nombre = String(datos.nombre ?? '').trim();
+  const responsable = String(datos.responsable ?? '').trim();
+  const email = String(datos.email ?? '').trim().toLowerCase();
+  const telefono = String(datos.telefono ?? '').trim();
+  const ciudad = String(datos.ciudad ?? '').trim();
+  const descripcion = String(datos.descripcion ?? '').trim();
+
+  if (!nombre || !responsable || !email || !telefono || !ciudad || !descripcion) {
+    return { error: 'Completá nombre, responsable, correo, teléfono, ubicación y descripción.' };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return { error: 'Escribí un correo electrónico válido.' };
+  }
+  if (!CIUDADES.includes(ciudad)) {
+    return { error: 'Seleccioná una ubicación válida.' };
+  }
+  return { nombre, responsable, email, telefono, ciudad, descripcion };
+}
+
 export function PetProvider({ children }) {
   const { usuarioActual } = useAuth();
   const [mascotas, setMascotas] = useEstadoGuardado(
     'mascotas',
     mascotasIniciales,
+  );
+  const [refugios, setRefugios] = useEstadoGuardado(
+    'refugios',
+    refugiosIniciales,
   );
 
   function obtenerMascota(id) {
@@ -99,6 +146,10 @@ export function PetProvider({ children }) {
     );
   }
 
+  function puedeAdministrarCatalogos() {
+    return usuarioActual?.rol === ROLES.ADMIN;
+  }
+
   // Todas las funciones de abajo devuelven { ok: true } o
   // { ok: false, error: 'mensaje para mostrar' }, igual que registrar() e
   // iniciarSesion() en AuthContext.
@@ -127,6 +178,129 @@ export function PetProvider({ children }) {
 
     setMascotas((actuales) => [...actuales, nueva]);
     return { ok: true, mascota: nueva };
+  }
+
+  function publicarMascotaAdmin(datos) {
+    if (!puedeAdministrarCatalogos()) {
+      return { ok: false, error: 'Solo la administración puede registrar mascotas desde este panel.' };
+    }
+    const errores = validarDatosAdminMascota(datos);
+    const refugioId = Number(datos.refugioId);
+    const refugio = refugios.find((r) => r.id === refugioId);
+    if (!refugio || !refugio.activo) {
+      errores.refugioId = 'Seleccioná un refugio activo existente.';
+    }
+    if (Object.keys(errores).length > 0) {
+      return { ok: false, error: 'Revisá los datos de la mascota.', errores };
+    }
+
+    const nueva = {
+      id: Math.max(0, ...mascotas.map((m) => m.id)) + 1,
+      ...normalizar(datos),
+      edad: Number(datos.edad),
+      estado: datos.estado,
+      refugioId,
+      foto: FOTO_POR_ESPECIE[datos.especie] ?? '/favicon.svg',
+      fechaPublicacion: hoy(),
+    };
+    setMascotas((actuales) => [...actuales, nueva]);
+    return { ok: true, mascota: nueva };
+  }
+
+  function editarMascotaAdmin(id, datos) {
+    if (!puedeAdministrarCatalogos()) {
+      return { ok: false, error: 'Solo la administración puede editar mascotas desde este panel.' };
+    }
+    const actual = obtenerMascota(id);
+    if (!actual) return { ok: false, error: 'No encontramos esa mascota.' };
+    const errores = validarDatosAdminMascota(datos);
+    const refugioId = Number(datos.refugioId);
+    const refugio = refugios.find((r) => r.id === refugioId);
+    if (!refugio || (!refugio.activo && actual.refugioId !== refugioId)) {
+      errores.refugioId = 'Seleccioná un refugio activo existente.';
+    }
+    if (Object.keys(errores).length > 0) {
+      return { ok: false, error: 'Revisá los datos de la mascota.', errores };
+    }
+    if (
+      datos.estado !== actual.estado &&
+      !transicionValidaMascota(actual.estado, datos.estado)
+    ) {
+      return {
+        ok: false,
+        error: `Una mascota «${actual.estado}» no puede pasar a «${datos.estado}».`,
+      };
+    }
+
+    setMascotas((actuales) =>
+      actuales.map((m) =>
+        m.id === actual.id
+          ? {
+              ...m,
+              ...normalizar(datos),
+              edad: Number(datos.edad),
+              estado: datos.estado,
+              refugioId,
+              foto: FOTO_POR_ESPECIE[datos.especie] ?? m.foto,
+            }
+          : m,
+      ),
+    );
+    return { ok: true };
+  }
+
+  function crearRefugioAdmin(datos) {
+    if (!puedeAdministrarCatalogos()) {
+      return { ok: false, error: 'Solo la administración puede gestionar refugios.' };
+    }
+    const valido = validarDatosRefugio(datos);
+    if (valido.error) return { ok: false, error: valido.error };
+    if (refugios.some((r) => r.email.trim().toLowerCase() === valido.email)) {
+      return { ok: false, error: 'Ya existe un refugio con ese correo.' };
+    }
+    const nuevo = {
+      id: Math.max(0, ...refugios.map((r) => r.id)) + 1,
+      ...valido,
+      activo: datos.activo !== false,
+    };
+    setRefugios((actuales) => [...actuales, nuevo]);
+    return { ok: true, refugio: nuevo };
+  }
+
+  function actualizarRefugioAdmin(id, datos) {
+    if (!puedeAdministrarCatalogos()) {
+      return { ok: false, error: 'Solo la administración puede gestionar refugios.' };
+    }
+    const existente = refugios.find((r) => r.id === Number(id));
+    if (!existente) return { ok: false, error: 'No encontramos ese refugio.' };
+    const valido = validarDatosRefugio(datos);
+    if (valido.error) return { ok: false, error: valido.error };
+    if (refugios.some((r) => r.id !== existente.id && r.email.trim().toLowerCase() === valido.email)) {
+      return { ok: false, error: 'Ya existe un refugio con ese correo.' };
+    }
+    const actualizado = {
+      ...existente,
+      ...valido,
+      activo: datos.activo === undefined ? existente.activo : Boolean(datos.activo),
+    };
+    setRefugios((actuales) =>
+      actuales.map((r) => (r.id === existente.id ? actualizado : r)),
+    );
+    return { ok: true, refugio: actualizado };
+  }
+
+  function cambiarEstadoRefugioAdmin(id, activo) {
+    if (!puedeAdministrarCatalogos()) {
+      return { ok: false, error: 'Solo la administración puede gestionar refugios.' };
+    }
+    const refugioId = Number(id);
+    if (!refugios.some((r) => r.id === refugioId)) {
+      return { ok: false, error: 'No encontramos ese refugio.' };
+    }
+    setRefugios((actuales) =>
+      actuales.map((r) => (r.id === refugioId ? { ...r, activo: Boolean(activo) } : r)),
+    );
+    return { ok: true };
   }
 
   // RN06 y RN08: edita los datos de una publicación. Si el estado cambia, tiene
@@ -217,9 +391,14 @@ export function PetProvider({ children }) {
     mascotasDeRefugio,
     filtrar,
     publicarMascota,
+    publicarMascotaAdmin,
     editarMascota,
+    editarMascotaAdmin,
     cambiarEstado,
     eliminarMascota,
+    crearRefugioAdmin,
+    actualizarRefugioAdmin,
+    cambiarEstadoRefugioAdmin,
   };
 
   return <PetContext.Provider value={valor}>{children}</PetContext.Provider>;
