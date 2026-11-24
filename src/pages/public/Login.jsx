@@ -109,20 +109,8 @@ export default function Login() {
             </Card.Body>
           </Card>
 
-          <Card className="mt-3 border-0 pc-seccion-clara">
-            <Card.Body className="small">
-              <p className="fw-semibold mb-1">Cuentas de prueba</p>
-              <ul className="mb-0 ps-3 text-body-secondary">
-                <li>sofia.ramirez@gmail.com — adoptante</li>
-                <li>contacto@patitasdeloeste.org — refugio</li>
-                <li>admin@petconect.com — administradora</li>
-                <li>rodrigo.peralta@gmail.com — cuenta desactivada</li>
-              </ul>
-              <p className="mb-0 mt-2 text-body-secondary">
-                La contraseña de todas es <strong>1234</strong>.
-              </p>
-            </Card.Body>
-          </Card>
+          
+
         </Col>
       </Row>
     </Container>
